@@ -6,7 +6,7 @@ from sqlmodel import SQLModel, Field, Column
 from sqlalchemy.dialects import postgresql
 
 
-class Label(Enum,str):
+class Label(str,Enum):
 
     postive = "positive"
     negative = "negative"
@@ -29,6 +29,6 @@ class Sentiment(SQLModel,table=True):
         )
     )
 
-    sentiment: Label
+    label: str
 
     text: str

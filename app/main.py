@@ -1,10 +1,21 @@
 from fastapi import FastAPI
 from transformers import pipeline
 from scalar_fastapi import get_scalar_api_reference
+from dotenv import load_dotenv
+from contextlib import asynccontextmanager
 
-from dotenv import load_dotenv()
+from app.db import SessionDep, create_all_tables
+from app.model import Sentiment
 
-app = FastAPI()
+load_dotenv()
+
+@asynccontextmanager
+async def lifespan_handler(app:FastAPI):
+    await create_all_tables()
+    yield
+    
+
+app = FastAPI(lifespan=lifespan_handler)
 
 
 sentiment_pipeline = pipeline(task = "sentiment-analysis",model="distilbert-base-uncased-finetuned-sst-2-english")
@@ -14,9 +25,19 @@ def health_check():
     return {"status": "healthy"}
 
 @app.get("/analyse")
-def analyse(text: str):
+async def analyse(text: str, session:SessionDep):
     result = sentiment_pipeline(text)
-    return result[0]["label"]
+    label =  result[0]["label"]
+    sentiment = Sentiment(
+        text=text,
+        label=label,
+    )
+
+    session.add(sentiment)
+    await session.commit()
+    await session.refresh(sentiment)
+    return sentiment
+
 
 
 @app.get("/scalar",include_in_schema=False)
