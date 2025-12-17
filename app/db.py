@@ -4,6 +4,7 @@ from typing import Annotated
 from fastapi import Depends
 from sqlalchemy.ext.asyncio import create_async_engine, AsyncSession
 from sqlalchemy.orm import sessionmaker
+from sqlmodel import SQLModel
 
 # DATABASE CONFIGURATION
 POSTGRES_SERVER = os.getenv("POSTGRES_SERVER")
@@ -34,5 +35,14 @@ async def get_session():
 
 # Session Dependency annotation
 SessionDep = Annotated[AsyncSession,Depends(get_session)]
+
+
+# function to create all the tables
+async def create_all_tables():
+    from app.model import Sentiment,Label # noqa : F401
+    async with engine.begin() as connection:
+        await connection.run_sync(
+            SQLModel.metadata.create_all
+        )
 
 
