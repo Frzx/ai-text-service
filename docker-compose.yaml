@@ -1,0 +1,19 @@
+services:
+  text-ai-service:
+    build: .
+    environment:
+      POSTGRES_SERVER: db
+    ports:
+      - "8000:8000"
+    env_file:
+      - .env
+    depends_on:
+      - db
+
+  db:
+    image: postgres:18
+    environment:
+        POSTGRES_PASSWORD: password
+        POSTGRES_DB: temp
+    ports:
+      - "5433:5432"
