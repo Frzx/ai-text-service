@@ -30,7 +30,7 @@ def health_check():
     return {"status": "healthy"}
 
 
-@app.get("/analyse", response_model=AnalyzeResponse)
+@app.post("/analyse", response_model=AnalyzeResponse)
 async def analyse(
     payload: AnalyzeRequest,
     session: SessionDep,
